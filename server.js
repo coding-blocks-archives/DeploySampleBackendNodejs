@@ -1,12 +1,27 @@
 const express = require('express')
-const path = require('path')
+const http = require('http')
+const socketio = require('socket.io')
 
-const SERVER_PORT = process.env.PORT || 3333
+//My express app
+const app = express();
+//The http server on which it runs
+const server = http.Server(app)
+//The socket.io server
+const io = socketio(server)
 
-const app = express()
 
-app.use('/public', express.static(path.join(__dirname, 'public')))
+const PORT = process.env.PORT || 2323;
 
-app.get('/', (req, res) => res.send("Hello from the backend"))
+io.on('connection', function (socket) {
+    console.log("Socket created :" + socket.id)
 
-app.listen(SERVER_PORT, () => console.log("Server started"))
+    socket.on('play', function(data) {
+        io.emit('play', data)
+    })
+})
+
+app.use('/', express.static(__dirname + "/public"))
+
+server.listen(PORT, () => {
+    console.log(`Server started at http://localhost:${PORT}`)
+})
